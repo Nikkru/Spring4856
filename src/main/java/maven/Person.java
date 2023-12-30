@@ -1,6 +1,7 @@
 package maven;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -9,6 +10,8 @@ import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.AbstractList;
+import java.util.ArrayList;
 
 /**
 Урок 1. Системы сборки Maven и Gradle для разработки Java приложений
@@ -23,19 +26,23 @@ import java.io.Serializable;
  */
 
 public class Person implements Serializable {
-    static Gson gson;
 
     private String firstName;
     private String lastName;
     private int age;
 
+    public static AbstractList<Person> persons = new ArrayList<Person>();
+
     public Person(String firstName, String lastName, int age) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
-        gson = new Gson();
+        persons.add(this);
     }
 
+//    public Person (String firstName, String lastName, int age) {
+//        this(firstName, lastName, age);
+//    }
     public Person() {}
 
     public String getFirstName() {
@@ -93,19 +100,38 @@ public class Person implements Serializable {
     }
 
     public static void savePersonInFileByJSON(Person person) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
         try {
-            gson.toJson(person, new FileWriter("person.json"));
+            FileWriter writer = new FileWriter("person.json");
+            String json = gson.toJson(person);
+            System.out.println(json);
+            gson.toJson(person, writer);
+//            writer.append(json);
+            writer.flush();
+            writer.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+    Парсим экземпляр класса в json
+     */
     public static String parsPersonToJSON(Person person) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(person);
+        System.out.println("Парсинг в json: "+json);
         return json;
     }
 
+    /**
+     * Депарсим json в экземпляр класса
+     * @param json
+     * @return
+     */
     public static Person parsJsonToPerson(String json) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Person person = gson.fromJson(json, Person.class);
         return person;
     }
